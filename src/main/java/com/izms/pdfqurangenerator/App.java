@@ -27,9 +27,13 @@ public class App {
 	public static void main(String[] args) throws IOException, ArabicShapingException, URISyntaxException {
 		PDDocument doc = new PDDocument();
 		URL arabicFontResource = App.class.getClassLoader().getResource("font/NotoNaskhArabicUI-Regular.ttf");
-		URL quranResource = App.class.getClassLoader().getResource("quran-simple.txt");
+		URL quranArabicResource = App.class.getClassLoader().getResource("quran-simple.txt");
+		URL quranEnglishResource = App.class.getClassLoader().getResource("en.ahmedali.txt");
+		
 		File arabicFontFile = new File(arabicFontResource.toURI());
-		File quranFile = new File(quranResource.toURI());
+		File arabicQuranFile = new File(quranArabicResource.toURI());
+		File englishQuranFile = new File(quranEnglishResource.toURI());
+		
 		PDFont englishFont = PDType1Font.HELVETICA;
 		float englishFontSize = 12f;
 		PDFont arabicFont = PDType0Font.load(doc, arabicFontFile);
@@ -47,23 +51,33 @@ public class App {
 		float startX = mediaBox.getLowerLeftX() + marginX;
 		float startY = mediaBox.getUpperRightY() - marginY;
 
-		BufferedReader reader = new BufferedReader(new FileReader(quranFile, StandardCharsets.UTF_8));
-		String[] lineParts = reader.readLine().trim().split("\\u007C");
+		BufferedReader arabicQuranReader = new BufferedReader(new FileReader(arabicQuranFile, StandardCharsets.UTF_8));
+		BufferedReader englishQuranReader = new BufferedReader(new FileReader(englishQuranFile, StandardCharsets.UTF_8));
+		
+		String[] arabicLineParts = arabicQuranReader.readLine().trim().split("\\u007C");
+		String[] englishLineParts = englishQuranReader.readLine().trim().split("\\u007C");
+		
 		int i = 1;
-		while (lineParts != null && i < 8) {
-			if (lineParts.length < 2) {
+		while (arabicLineParts != null && i < 8) {
+			if (arabicLineParts.length < 2) {
 				continue;
 			}
 
-			String suraNumber = lineParts[0];
-			String ayatNumber = lineParts[1];
-			String ayat = lineParts[2];
+			String suraNumber = arabicLineParts[0];
+			String ayatNumber = arabicLineParts[1];
+			String ayat = arabicLineParts[2];
+			String translation = englishLineParts[2];
+			
 
 			System.out.println(ayat);
 
-			addParagraph(writer, width, startX, startY, ayat, true, arabicFont, arabicFontSize,ayatNumber);
+			addParagraph(writer, width, startX, startY, ayat, true, arabicFont, arabicFontSize,ayatNumber,"ar");
 			startY = 0;
-			lineParts = reader.readLine().trim().split("\\u007C");
+			addParagraph(writer, width, startX, startY, translation, true, englishFont, englishFontSize,ayatNumber,"en");
+			writer.newLineAtOffset(0, calcLeading(englishFontSize));
+			startY = 0;
+			arabicLineParts = arabicQuranReader.readLine().trim().split("\\u007C");
+			englishLineParts = englishQuranReader.readLine().trim().split("\\u007C");
 			i++;
 		}
 
@@ -88,12 +102,12 @@ public class App {
 	}
 
 	private static void addParagraph(PDPageContentStream contentStream, float width, float sx, float sy, String text,
-			PDFont font, float fontSize, String ayatNumber) throws IOException {
-		addParagraph(contentStream, width, sx, sy, text, false, font, fontSize, ayatNumber);
+			PDFont font, float fontSize, String ayatNumber,String lang) throws IOException {
+		addParagraph(contentStream, width, sx, sy, text, false, font, fontSize, ayatNumber,lang);
 	}
 
 	private static void addParagraph(PDPageContentStream contentStream, float width, float sx, float sy, String text,
-			boolean justify, PDFont font, float fontSize, String ayatNumber) throws IOException {
+			boolean justify, PDFont font, float fontSize, String ayatNumber,String lang) throws IOException {
 		List<String> lines = parseLines(text, width, font, fontSize);
 		contentStream.setFont(font, fontSize);
 		contentStream.newLineAtOffset(sx, sy);
@@ -113,7 +127,11 @@ public class App {
 				}
 			}
 			contentStream.setCharacterSpacing(charSpacing);
-			contentStream.showText("\ufd3e"+ayatNumber+"\ufd3f"+line);
+			if (lang.equalsIgnoreCase("ar")) {
+				contentStream.showText("\ufd3e"+ayatNumber+"\ufd3f"+line);
+			} else {
+				contentStream.showText(line);
+			}
 			contentStream.newLineAtOffset(-xoffset, 0);
 		}
 		contentStream.newLineAtOffset(-sx, 0);
