@@ -1,0 +1,143 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="quran">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="suras">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="sura" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:byte" name="index" use="optional"/>
+                      <xs:attribute type="xs:short" name="ayas" use="optional"/>
+                      <xs:attribute type="xs:short" name="start" use="optional"/>
+                      <xs:attribute type="xs:string" name="name" use="optional"/>
+                      <xs:attribute type="xs:string" name="tname" use="optional"/>
+                      <xs:attribute type="xs:string" name="ename" use="optional"/>
+                      <xs:attribute type="xs:string" name="type" use="optional"/>
+                      <xs:attribute type="xs:byte" name="order" use="optional"/>
+                      <xs:attribute type="xs:byte" name="rukus" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="alias"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="juzs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="juz" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:byte" name="index" use="optional"/>
+                      <xs:attribute type="xs:byte" name="sura" use="optional"/>
+                      <xs:attribute type="xs:short" name="aya" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="alias"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="hizbs">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="quarter" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:short" name="index" use="optional"/>
+                      <xs:attribute type="xs:byte" name="sura" use="optional"/>
+                      <xs:attribute type="xs:short" name="aya" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="alias"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="manzils">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="manzil" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:byte" name="index" use="optional"/>
+                      <xs:attribute type="xs:byte" name="sura" use="optional"/>
+                      <xs:attribute type="xs:byte" name="aya" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="alias"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="rukus">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="ruku" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:short" name="index" use="optional"/>
+                      <xs:attribute type="xs:byte" name="sura" use="optional"/>
+                      <xs:attribute type="xs:short" name="aya" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="alias"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="pages">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="page" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:short" name="index" use="optional"/>
+                      <xs:attribute type="xs:byte" name="sura" use="optional"/>
+                      <xs:attribute type="xs:short" name="aya" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="sajdas">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="sajda" maxOccurs="unbounded" minOccurs="0">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute type="xs:byte" name="index" use="optional"/>
+                      <xs:attribute type="xs:byte" name="sura" use="optional"/>
+                      <xs:attribute type="xs:short" name="aya" use="optional"/>
+                      <xs:attribute type="xs:string" name="type" use="optional"/>
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute type="xs:string" name="type"/>
+      <xs:attribute type="xs:float" name="version"/>
+      <xs:attribute type="xs:string" name="copyright"/>
+      <xs:attribute type="xs:string" name="license"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
