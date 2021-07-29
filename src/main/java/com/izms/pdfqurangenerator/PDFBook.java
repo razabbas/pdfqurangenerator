@@ -110,7 +110,7 @@ public class PDFBook {
 			currentContentStream.close();
 		}
 		
-		currentPage = new PDPage(PDRectangle.A4);
+		currentPage = new PDPage(pageType);
 		doc.addPage(currentPage);
 		pageCounter++;
 		currentContentStream = new PDPageContentStream(doc, currentPage);
@@ -135,11 +135,19 @@ public class PDFBook {
 	}
 	
 	public void writeLine(String text, PDFont font, float fontSize, TextAlignment alignment) throws IOException {
-		List<String> lines = parseLines(text, font, fontSize);
-		writeLine(lines,font,fontSize,alignment);
+		writeLine(text,font,fontSize,alignment,false);
+	}
+	
+	public void writeLine(String text, PDFont font, float fontSize, TextAlignment alignment,boolean rtl) throws IOException {
+		List<String> lines = parseLines(text, font, fontSize,rtl);
+		writeLine(lines,font,fontSize,alignment,rtl);
 	}
 	
 	public void writeLine(List<String> lines, PDFont font, float fontSize, TextAlignment alignment) throws IOException {
+		writeLine(lines,font,fontSize,alignment,false);
+	}
+	
+	public void writeLine(List<String> lines, PDFont font, float fontSize, TextAlignment alignment,boolean rtl) throws IOException {
 		float lineLength = 0;
 		float xoffset = 0;
 		
@@ -180,7 +188,7 @@ public class PDFBook {
 		return fontSize * font.getStringWidth(text)/1000;
 	}
 
-	private List<String> parseLines(String text, PDFont font, float fontSize) throws IOException {
+	private List<String> parseLines(String text, PDFont font, float fontSize, boolean rtl) throws IOException {
 		List<String> lines = new ArrayList<String>();
 		int lastSpace = -1;
 		
@@ -190,7 +198,7 @@ public class PDFBook {
 				spaceIndex = text.length();
 			}
 			String subString = text.substring(0, spaceIndex);
-			String reorderedString = bidiReorder(subString);
+			String reorderedString = bidiReorder(subString,rtl);
 			float reorderedDiff = Math.abs(getLineWidth(font, fontSize, reorderedString) - getLineWidth(font, fontSize, subString));
 			float size = getLineWidth(font, fontSize,reorderedString);
 			if (size > (pageWidth-reorderedDiff)) {
@@ -198,11 +206,11 @@ public class PDFBook {
 					lastSpace = spaceIndex;
 				}
 				subString = text.substring(0, lastSpace);
-				lines.add(bidiReorder(subString));
+				lines.add(bidiReorder(subString,rtl));
 				text = text.substring(lastSpace).trim();
 				lastSpace = -1;
 			} else if (spaceIndex == text.length()) {
-				lines.add(bidiReorder(text));
+				lines.add(bidiReorder(text,rtl));
 				text = "";
 			} else {
 				lastSpace = spaceIndex;
@@ -211,7 +219,10 @@ public class PDFBook {
 		return lines;
 	}
 
-	private String bidiReorder(String text) {
+	private String bidiReorder(String text, boolean rtl) {
+		if (!rtl) {
+			return text;
+		}
 		try {
 			Bidi bidi = new Bidi((new ArabicShaping(ArabicShaping.LETTERS_SHAPE)).shape(text), 127);
 			bidi.setReorderingMode(0);
