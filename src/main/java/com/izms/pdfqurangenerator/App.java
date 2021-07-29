@@ -33,7 +33,7 @@ public class App {
 	public static void main(String[] args) throws IOException, ArabicShapingException, URISyntaxException, JAXBException {
 		Quran quran = readQuranMetadataJaxB("quran-data.xml");
 		PDDocument doc = new PDDocument();
-		URL arabicFontResource = App.class.getClassLoader().getResource("font/NotoNaskhArabicUI-Regular.ttf");
+		URL arabicFontResource = App.class.getClassLoader().getResource("font/NotoNaskhArabicUI-Bold.ttf");
 		URL englishFontResource = App.class.getClassLoader().getResource("font/en/NotoSans-hinted/NotoSans-Regular.ttf");
 		URL quranArabicResource = App.class.getClassLoader().getResource("quran-simple.txt");
 		URL quranEnglishResource = App.class.getClassLoader().getResource("en.ahmedali.txt");
@@ -43,21 +43,10 @@ public class App {
 		File arabicQuranFile = new File(quranArabicResource.toURI());
 		File englishQuranFile = new File(quranEnglishResource.toURI());
 
-		PDFont englishFont = PDType0Font.load(doc, englishFontFile);;
-		float englishFontSize = 12f;
+		PDFont englishFont = PDType0Font.load(doc, englishFontFile);
 		PDFont arabicFont = PDType0Font.load(doc, arabicFontFile);
+		float englishFontSize = 12f;
 		float arabicFontSize = 12f;
-
-		PDPage page = new PDPage(PDRectangle.A4);
-		doc.addPage(page);
-		PDPageContentStream writer = new PDPageContentStream(doc, page);
-		writer.beginText();
-		PDRectangle mediaBox = page.getMediaBox();
-		float marginY = 40;
-		float marginX = 40;
-		float width = mediaBox.getWidth() - 3f * marginX;
-		float startX = mediaBox.getLowerLeftX() + marginX;
-		float startY = mediaBox.getUpperRightY() - marginY;
 
 		BufferedReader arabicQuranReader = new BufferedReader(new FileReader(arabicQuranFile, StandardCharsets.UTF_8));
 		BufferedReader englishQuranReader = new BufferedReader(
@@ -65,10 +54,27 @@ public class App {
 
 		String[] arabicLineParts = arabicQuranReader.readLine().trim().split("\\u007C");
 		String[] englishLineParts = englishQuranReader.readLine().trim().split("\\u007C");
+		
+		PDRectangle mediaBox = PDRectangle.A4;
+		float marginY = 40;
+		float marginX = 40;
+		float width = mediaBox.getWidth() - 3f * marginX;
+		float startX = mediaBox.getLowerLeftX() + marginX;
+		float startY = mediaBox.getUpperRightY() - marginY;
+		float pageHeight = mediaBox.getHeight();
+		
+		PDPage page = new PDPage(PDRectangle.A4);
+		doc.addPage(page);
+		PDPageContentStream writer = new PDPageContentStream(doc, page);
+		writer.beginText();
+		
+		
 
 		int i = 1;
 		int previousSuraNumber = 0;
-		while (arabicLineParts != null && i < 300) {
+		
+		while (arabicLineParts != null && i < 30) {
+			int currentPageHeight = 0;
 			if (arabicLineParts.length < 2) {
 				continue;
 			}
@@ -79,6 +85,17 @@ public class App {
 			String translation = englishLineParts[2];
 
 			if (suraNumber != previousSuraNumber) {
+				
+				if (suraNumber > 1) {
+					writer.endText();
+					writer.close();
+					page = new PDPage(PDRectangle.A4);
+					doc.addPage(page);
+					writer = new PDPageContentStream(doc, page);
+					writer.beginText();
+					startY = mediaBox.getUpperRightY() - marginY;
+					startX = mediaBox.getLowerLeftX() + marginX;
+				}
 				//add title
 				Sura sura = quran.getSuras().getSura().get(suraNumber-1);
 				addHeaderLine(writer, width, startX, startY, sura.getName(), true, arabicFont, arabicFontSize, "ar");
@@ -88,6 +105,8 @@ public class App {
 				addHeaderLine(writer, width, startX, startY, "Number:"+sura.getIndex()+" Type:"+sura.getType()+" Num of Ayat:"+sura.getAyas(), true, englishFont, englishFontSize/2, "en");
 				startY = 0;
 				previousSuraNumber = suraNumber;
+				
+				
 			}
 			
 			addParagraph(writer, width, startX, startY, ayat, true, arabicFont, arabicFontSize, ayatNumber, "ar");
@@ -106,6 +125,7 @@ public class App {
 		doc.save(new File("File_Test.pdf"));
 		doc.close();
 	}
+	
 
 	private static String bidiReorder(String text) {
 		try {
@@ -121,13 +141,14 @@ public class App {
 		return -1.5f * fontSize;
 	}
 
-	private static void addParagraph(PDPageContentStream contentStream, float width, float sx, float sy, String text,
+	private static float addParagraph(PDPageContentStream contentStream, float width, float sx, float sy, String text,
 			PDFont font, float fontSize, String ayatNumber, String lang) throws IOException {
-		addParagraph(contentStream, width, sx, sy, text, false, font, fontSize, ayatNumber, lang);
+		return addParagraph(contentStream, width, sx, sy, text, false, font, fontSize, ayatNumber, lang);
 	}
 
-	private static void addParagraph(PDPageContentStream contentStream, float width, float sx, float sy, String text,
+	private static float addParagraph(PDPageContentStream contentStream, float width, float sx, float sy, String text,
 			boolean justify, PDFont font, float fontSize, String ayatNumber, String lang) throws IOException {
+		float height = 0f;
 		List<String> lines = parseLines(text, width, font, fontSize);
 		contentStream.setFont(font, fontSize);
 		contentStream.newLineAtOffset(sx, sy);
@@ -136,6 +157,7 @@ public class App {
 			float lineLength = fontSize * font.getStringWidth(line) / 1000;
 			xoffset = sx + (width - lineLength);
 			contentStream.newLineAtOffset(xoffset, calcLeading(fontSize));
+			height++;
 			float charSpacing = 0;
 			if (justify) {
 				if (line.length() > 1) {
@@ -155,6 +177,7 @@ public class App {
 			contentStream.newLineAtOffset(-xoffset, 0);
 		}
 		contentStream.newLineAtOffset(-sx, 0);
+		return height;
 
 	}
 
@@ -185,8 +208,9 @@ public class App {
 		return lines;
 	}
 	
-	private static void addHeaderLine(PDPageContentStream contentStream, float width, float sx, float sy, String text,
+	private static float addHeaderLine(PDPageContentStream contentStream, float width, float sx, float sy, String text,
 			boolean justify, PDFont font, float fontSize, String lang) throws IOException {
+		float height = 0f;
 		List<String> lines = parseLines(text, width, font, fontSize);
 		contentStream.setFont(font, fontSize);
 		contentStream.newLineAtOffset(sx, sy);
@@ -195,6 +219,7 @@ public class App {
 			float lineLength = fontSize * font.getStringWidth(line) / 1000;
 			xoffset = sx + (width - lineLength)/2;
 			contentStream.newLineAtOffset(xoffset, calcLeading(fontSize));
+			height++;
 			float charSpacing = 0;
 			if (justify) {
 				if (line.length() > 1) {
@@ -210,8 +235,10 @@ public class App {
 			contentStream.newLineAtOffset(-xoffset, 0);
 		}
 		contentStream.newLineAtOffset(-sx, 0);
+		return height;
 
 	}
+	
 
 	private static Quran readQuranMetadataJaxB(String xmlMetadataFile)
 			throws JAXBException, IOException, URISyntaxException {
