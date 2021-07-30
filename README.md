@@ -1,5 +1,5 @@
 # pdfqurangenerator
-This java program generates quran from arabic text and corresponding translation.
+This java program generates quran from arabic text and corresponding translation. This is based on file formats and metadata on https://tanzil.net/.
 
 # Usage
 usage: java QuranPDFGenerator

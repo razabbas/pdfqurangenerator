@@ -159,7 +159,7 @@ public class QuranPDFGenerator {
 		// create the Options
 		Options options = new Options();
 		options.addOption("o", "output-file-name", true, "output pdf file");
-		options.addRequiredOption("q", "quran-metadata-xmlfile", true, "quran metadata xml file");
+		options.addOption("q", "quran-metadata-xmlfile", true, "quran metadata xml file");
 		options.addOption("a", "arabic-font-file", true, "arabic font file");
 		options.addOption("s", "arabic-font-size", true, "arabic font size");
 		options.addOption("t", "quran-text-file", true, "quran text file");
